@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"time"
 )
 
 // SmartContract provides functions for managing an Service
@@ -12,30 +11,31 @@ type SmartContract struct {
 	contractapi.Contract
 }
 
-// Service identifica la relazione di servizio che si stabilisce tra un Rider e il Driver a lui più vicino, al momento della richiesta del servizio stesso.
-// @ServiceID: identificativo dell'Service
+// Service identifica la relazione del servizio che si stabilisce tra un Rider e il Driver a lui più vicino, al momento della richiesta del servizio stesso:
+// contiene informazioni di report che il Driver deve comunicare al RHS Provider per esporre i servizi erogati e i dati corrispondenti.
+// @ServiceID: identificativo del Service erogato
 // @DriverID: identificativo del driver, entro l'applicazione
-// @RiderID: identificativo del rider, entro l'applicazione
 // @TimeStampServizio: timestamp generato nel momento in cui è associato un driver al rider
+// @Fare: contiene informazioni di report (banalmente il pagamento del servizio offerto) da riportare al RHS-Provider
 type Service struct {
 	ServiceID         string `json:"ServiceID"`
 	DriverID          string `json:"DriverID"`
-	RiderID           string `json:"RiderID"`
 	TimeStampServizio string `json:"TimeStampServizio"`
+	Fare              string `json:"Fare"`
 }
 
 // InitLedger inserisce una serie di Service mock con cui interagire
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface, timestampMock string) error {
 	assets := []Service{
-		{ServiceID: "asset0", DriverID: "Driver91", RiderID: "Rider6", TimeStampServizio: timestampMock},
-		{ServiceID: "asset1", DriverID: "Driver2", RiderID: "Rider19", TimeStampServizio: timestampMock},
-		{ServiceID: "asset2", DriverID: "Driver41", RiderID: "Rider24", TimeStampServizio: timestampMock},
-		{ServiceID: "asset3", DriverID: "Driver32", RiderID: "Rider24", TimeStampServizio: timestampMock},
-		{ServiceID: "asset4", DriverID: "Driver14", RiderID: "Rider19", TimeStampServizio: timestampMock},
-		{ServiceID: "asset5", DriverID: "Driver53", RiderID: "Rider19", TimeStampServizio: timestampMock},
-		{ServiceID: "asset6", DriverID: "Driver6", RiderID: "Rider3", TimeStampServizio: timestampMock},
-		{ServiceID: "asset7", DriverID: "Driver27", RiderID: "Rider87", TimeStampServizio: timestampMock},
-		{ServiceID: "asset8", DriverID: "Driver18", RiderID: "Rider19", TimeStampServizio: timestampMock},
+		{ServiceID: "service0", DriverID: "Driver91", TimeStampServizio: timestampMock, Fare: "21€"},
+		{ServiceID: "service1", DriverID: "Driver2", TimeStampServizio: timestampMock, Fare: "25€"},
+		{ServiceID: "service2", DriverID: "Driver41", TimeStampServizio: timestampMock, Fare: "57€"},
+		{ServiceID: "service3", DriverID: "Driver32", TimeStampServizio: timestampMock, Fare: "12€"},
+		{ServiceID: "service4", DriverID: "Driver14", TimeStampServizio: timestampMock, Fare: "7€"},
+		{ServiceID: "service5", DriverID: "Driver53", TimeStampServizio: timestampMock, Fare: "30€"},
+		{ServiceID: "service6", DriverID: "Driver6", TimeStampServizio: timestampMock, Fare: "9€"},
+		{ServiceID: "service7", DriverID: "Driver27", TimeStampServizio: timestampMock, Fare: "24€"},
+		{ServiceID: "service8", DriverID: "Driver18", TimeStampServizio: timestampMock, Fare: "15€"},
 	}
 
 	for _, asset := range assets {
@@ -53,38 +53,38 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface, 
 	return nil
 }
 
-// CreateAsset inserisce un nuovo Service, asset di servizio associato al Rider che richiede l'operazione
-func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, riderID string, driverID string, timestampServizio string) error {
-	exists, err := s.AssetExists(ctx, assetID)
+// CreateService inserisce un nuovo Service, asset di servizio associato al Rider che richiede l'operazione
+func (s *SmartContract) CreateService(ctx contractapi.TransactionContextInterface, serviceID string, driverID string, timestampServizio string, fare string) error {
+	exists, err := s.ServiceExists(ctx, serviceID)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return fmt.Errorf("the asset %s already exists", assetID)
+		return fmt.Errorf("the asset %s already exists", serviceID)
 	}
 
 	asset := Service{
-		ServiceID:         assetID,
+		ServiceID:         serviceID,
 		DriverID:          driverID,
-		RiderID:           riderID,
 		TimeStampServizio: timestampServizio,
+		Fare:              fare,
 	}
 	assetJSON, err := json.Marshal(asset)
 	if err != nil {
 		return err
 	}
 
-	return ctx.GetStub().PutState(assetID, assetJSON)
+	return ctx.GetStub().PutState(serviceID, assetJSON)
 }
 
-// ReadAsset restituisce l'Service corrispondente all'@assetID fornito
-func (s *SmartContract) ReadAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Service, error) {
-	assetJSON, err := ctx.GetStub().GetState(assetID)
+// ReadService restituisce l'Service corrispondente all'@assetID fornito
+func (s *SmartContract) ReadService(ctx contractapi.TransactionContextInterface, serviceID string) (*Service, error) {
+	assetJSON, err := ctx.GetStub().GetState(serviceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
 	if assetJSON == nil {
-		return nil, fmt.Errorf("the asset %s does not exist", assetID)
+		return nil, fmt.Errorf("the asset %s does not exist", serviceID)
 	}
 
 	var asset Service
@@ -96,48 +96,48 @@ func (s *SmartContract) ReadAsset(ctx contractapi.TransactionContextInterface, a
 	return &asset, nil
 }
 
-// UpdateAsset aggiorna lo stato di un Service di servizio con i nuovi parametri forniti.
-func (s *SmartContract) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, driverID string, riderID string, timeStampServizio time.Time) error {
-	exists, err := s.AssetExists(ctx, assetID)
+// UpdateService aggiorna lo stato di un Service di servizio con i nuovi parametri forniti.
+func (s *SmartContract) UpdateService(ctx contractapi.TransactionContextInterface, serviceID string, driverID string, timeStampServizio string, fare string) error {
+	exists, err := s.ServiceExists(ctx, serviceID)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("the asset %s does not exist", assetID)
+		return fmt.Errorf("the asset %s does not exist", serviceID)
 	}
 
 	// overwriting original asset with new asset
 	asset := Service{
-		ServiceID:         assetID,
+		ServiceID:         serviceID,
 		DriverID:          driverID,
-		RiderID:           riderID,
-		TimeStampServizio: timeStampServizio.String(),
+		TimeStampServizio: timeStampServizio,
+		Fare:              fare,
 	}
 	assetJSON, err := json.Marshal(asset)
 	if err != nil {
 		return err
 	}
 
-	return ctx.GetStub().PutState(assetID, assetJSON)
+	return ctx.GetStub().PutState(serviceID, assetJSON)
 }
 
-// DeleteAsset elimina l'Service richiesto
-func (s *SmartContract) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
-	exists, err := s.AssetExists(ctx, assetID)
+// DeleteService elimina l'Service richiesto
+func (s *SmartContract) DeleteService(ctx contractapi.TransactionContextInterface, serviceID string) error {
+	exists, err := s.ServiceExists(ctx, serviceID)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("the asset %s does not exist", assetID)
+		return fmt.Errorf("the asset %s does not exist", serviceID)
 	}
 
-	return ctx.GetStub().DelState(assetID)
+	return ctx.GetStub().DelState(serviceID)
 }
 
-// AssetExists restituisce un booleano corrispondente all'esistenza dell'Service di servizio
-func (s *SmartContract) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
+// ServiceExists restituisce un booleano corrispondente all'esistenza dell'Service di servizio
+func (s *SmartContract) ServiceExists(ctx contractapi.TransactionContextInterface, serviceID string) (bool, error) {
 
-	assetJSON, err := ctx.GetStub().GetState(assetID)
+	assetJSON, err := ctx.GetStub().GetState(serviceID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -145,9 +145,9 @@ func (s *SmartContract) AssetExists(ctx contractapi.TransactionContextInterface,
 	return assetJSON != nil, nil
 }
 
-// TransferAsset aggiorna l'Service corrispondente a @assetID attribuendolo ad un nuovo Driver
-func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterface, assetID string, newDriver string) (string, error) {
-	asset, err := s.ReadAsset(ctx, assetID)
+// TransferService aggiorna il Service corrispondente a @assetID attribuendolo ad un nuovo Driver
+func (s *SmartContract) TransferService(ctx contractapi.TransactionContextInterface, serviceID string, newDriver string) (string, error) {
+	asset, err := s.ReadService(ctx, serviceID)
 	if err != nil {
 		return "", err
 	}
@@ -160,7 +160,7 @@ func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterfac
 		return "", err
 	}
 
-	err = ctx.GetStub().PutState(assetID, assetJSON)
+	err = ctx.GetStub().PutState(serviceID, assetJSON)
 	if err != nil {
 		return "", err
 	}
@@ -168,8 +168,8 @@ func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterfac
 	return oldDriver, nil
 }
 
-// GetAllAssets restituisce tutti i servizi erogati
-func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Service, error) {
+// GetAllServices restituisce tutti i servizi erogati
+func (s *SmartContract) GetAllServices(ctx contractapi.TransactionContextInterface) ([]*Service, error) {
 	// range query with empty string for startKey and endKey does an
 	// open-ended query of all assets in the chaincode namespace.
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")

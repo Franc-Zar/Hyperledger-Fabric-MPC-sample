@@ -28,8 +28,8 @@ The smart contract (in folder `chaincode-go`) implements the following functions
 - CreateAsset
 - ReadAsset
 - UpdateAsset
-- DeleteAsset
-- TransferAsset
+- DeleteService
+- TransferService
 
 Note that the asset transfer implemented by the smart contract is a simplified scenario, without ownership validation, meant only to demonstrate how to invoke transactions.
 

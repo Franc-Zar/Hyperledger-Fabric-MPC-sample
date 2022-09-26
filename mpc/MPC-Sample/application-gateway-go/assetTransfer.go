@@ -7,15 +7,16 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"assetTransfer/utilities"
 	"bytes"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"path"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"google.golang.org/grpc"
@@ -35,8 +36,11 @@ const (
 	defaultnbDrivers = 2048
 )
 
+// serve al reperimento dell'id della transazione creata, dal momento che è generato casualmente mediante il package uuid di Google
+var createdServiceID string
+
 func main() {
-	log.Println("============ application-golang starts ============")
+	color.Blue("============ application-golang starts ============")
 
 	// The gRPC client connection should be shared by all Gateway connections to this endpoint
 	clientConnection := newGrpcConnection()
@@ -64,27 +68,27 @@ func main() {
 	network := gateway.GetNetwork(channelName)
 	contract := network.GetContract(chaincodeName)
 
-	fmt.Println("*************************************************")
-	fmt.Println("initLedger:")
+	color.Cyan("*************************************************")
+	color.Cyan("initLedger:")
 	initLedger(contract)
 	fmt.Println()
 
-	fmt.Println("*************************************************")
-	fmt.Println("createAsset:")
-	createAsset(contract, "Rider787")
+	color.Cyan("*************************************************")
+	color.Cyan("createServices:")
+	createServices(contract, "Rider787")
 	fmt.Println()
 
-	fmt.Println("*************************************************")
-	fmt.Println("readAssetByID:")
-	readAssetByID(contract, "asset543")
+	color.Cyan("*************************************************")
+	color.Cyan("readServiceByID sul servizio appena creato:")
+	readServiceByID(contract, createdServiceID)
 	fmt.Println()
 
-	fmt.Println("*************************************************")
-	fmt.Println("getAllAssets:")
-	getAllAssets(contract)
+	color.Cyan("*************************************************")
+	color.Cyan("getAllServices:")
+	getAllServices(contract)
 	fmt.Println()
 
-	log.Println("============ application-golang ends ============")
+	color.Blue("============ application-golang ends ============")
 }
 
 // newGrpcConnection creates a gRPC connection to the Gateway server.
@@ -157,63 +161,64 @@ func newSign() identity.Sign {
 // This type of transaction would typically only be run once by an application the first time it was started after its
 // initial deployment. A new version of the chaincode deployed later would likely not need to run an "init" function.
 func initLedger(contract *client.Contract) {
-	fmt.Printf("Submit Transaction: InitLedger, function creates the initial set of assets on the ledger \n")
+	color.Cyan("Submit Transaction: InitLedger, function creates the initial set of assets on the ledger \n")
 
 	_, err := contract.SubmitTransaction("InitLedger", time.Now().String())
 	if err != nil {
 		panic(fmt.Errorf("failed to submit transaction: %w", err))
 	}
 
-	fmt.Printf("*** Transaction committed successfully\n")
+	color.Green("*** Transaction committed successfully\n")
 }
 
 // Evaluate a transaction to query ledger state.
-func getAllAssets(contract *client.Contract) {
-	fmt.Println("Evaluate Transaction: GetAllAssets, function returns all the current assets on the ledger")
+func getAllServices(contract *client.Contract) {
+	color.Cyan("Evaluate Transaction: GetAllServices, function returns all the current assets on the ledger")
 
-	evaluateResult, err := contract.EvaluateTransaction("GetAllAssets")
+	evaluateResult, err := contract.EvaluateTransaction("GetAllServices")
 	if err != nil {
 		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
 	}
 	result := formatJSON(evaluateResult)
 
-	fmt.Printf("*** Result:%s\n", result)
+	color.Green("*** Result:%s\n", result)
 }
 
 // Submit a transaction synchronously, blocking until it has been committed to the ledger.
-func createAsset(contract *client.Contract, riderID string) {
-	fmt.Printf("Submit Transaction: CreateAsset, creates new asset with ID, Driver, Rider, timestamp \n")
+func createServices(contract *client.Contract, riderID string) {
+	color.Cyan("Submit Transaction: CreateService, creates new asset with ID, Driver, Timestamp, Fare \n")
 
-	_, timestampServizio, isClosestDriverFound := ObliviousRiding(defaultnbDrivers, riderID)
+	// reperimento Driver più vicino
+	closestDriverID, timestampServizio, isClosestDriverFound := utilities.ObliviousRiding(defaultnbDrivers, riderID)
 
 	if isClosestDriverFound {
-		// transazione mock che non dipende dal risultato di ObliviousRiding poichè la logica con cui è implementata contiene funzionni di generazione casuale
-		// dei dati di input relativi alle coordinate: non è possibile garantire l'esecuzione deterministica dello smart contract e quindi fallirebbe nella maggior
-		// parte dei casi. Si considera tale transazione effettivamente corrispondente alla logica di esecuzione, ciò è accettabile poichè richiede la sola
-		// sosituzione della generazione casuale dei dati con la opportuna logica di reperimento delle applicazioni
-		_, err := contract.SubmitTransaction("CreateAsset", "asset543", riderID, "CloserRiderFoundID", timestampServizio)
+		// mock di servizio
+		var fare string
+		createdServiceID, fare = utilities.SetRide(riderID, closestDriverID)
+
+		_, err := contract.SubmitTransaction("CreateService", createdServiceID, closestDriverID, timestampServizio, fare)
 		if err != nil {
 			panic(fmt.Errorf("failed to submit transaction: %w", err))
 		}
 
-		fmt.Printf("*** Transaction committed successfully\n")
+		color.Green("*** Transaction committed successfully\n")
 
 	} else {
-		fmt.Printf("failed to submit transiction: driver not found")
+		color.Red("failed to submit Transaction: driver not found")
 	}
 }
 
-// Evaluate a transaction by assetID to query ledger state.
-func readAssetByID(contract *client.Contract, assetID string) {
-	fmt.Printf("Evaluate Transaction: ReadAsset, function returns asset attributes\n")
+// Evaluate a transaction by serviceID to query ledger state.
+func readServiceByID(contract *client.Contract, serviceID string) {
+	color.Cyan("Evaluate Transaction: ReadService, function returns asset attributes\n")
 
-	evaluateResult, err := contract.EvaluateTransaction("ReadAsset", assetID)
+	evaluateResult, err := contract.EvaluateTransaction("ReadService", serviceID)
 	if err != nil {
 		panic(fmt.Errorf("failed to evaluate transaction: %w", err))
 	}
 	result := formatJSON(evaluateResult)
 
-	fmt.Printf("*** Result:%s\n", result)
+	color.Green("*** Result:%s\n", result)
 }
 
 // Format JSON data

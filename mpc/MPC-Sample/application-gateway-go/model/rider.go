@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/tuneinsight/lattigo/v3/bfv"
 	"github.com/tuneinsight/lattigo/v3/ring"
 	"github.com/tuneinsight/lattigo/v3/rlwe"
@@ -44,7 +45,7 @@ func NewRider(riderID string) Rider {
 		panic(err)
 	}
 
-	fmt.Printf("Parameters : N=%d, T=%d, Q = %d bits, sigma = %f \n",
+	color.Yellow("Parameters : N=%d, T=%d, Q = %d bits, sigma = %f \n",
 		1<<params.LogN(), params.T(), params.LogQP(), params.Sigma())
 	fmt.Println()
 
@@ -80,7 +81,7 @@ func (rider *Rider) GetCipheredPosition(nbDrivers int) bfv.Ciphertext {
 	maxvalue := uint64(math.Sqrt(float64(rider.Params.T()))) // max values = floor(sqrt(plaintext modulus))
 	mask := uint64(1<<bits.Len64(maxvalue) - 1)              // binary mask upper-bound for the uniform sampling
 
-	fmt.Printf("Generating %d driversData and 1 Rider randomly positioned on a grid of %d x %d units \n",
+	color.Yellow("Generating %d driversData and 1 Rider randomly positioned on a grid of %d x %d units \n",
 		nbDrivers, maxvalue, maxvalue)
 	fmt.Println()
 
@@ -103,7 +104,7 @@ func (rider *Rider) GetCipheredPosition(nbDrivers int) bfv.Ciphertext {
 
 // calcolo del Driver più vicino, tra tutti quelli forniti come argomento
 func (rider *Rider) FindClosestDriver(nbDrivers int, riderCiphertext *bfv.Ciphertext, drivers *Drivers) {
-	fmt.Println("Computing encrypted distance = ((CtD1 + CtD2 + CtD3 + CtD4...) - CtR)^2 ...")
+	color.Yellow("Computing encrypted distance = ((CtD1 + CtD2 + CtD3 + CtD4...) - CtR)^2 ...")
 	fmt.Println()
 
 	rider.evaluator.Neg(riderCiphertext, riderCiphertext)
@@ -136,20 +137,19 @@ func (rider *Rider) FindClosestDriver(nbDrivers int, riderCiphertext *bfv.Cipher
 		}
 
 		if i < 4 || i > nbDrivers-5 {
-			fmt.Printf("Distance with Driver %d : %8d = (%4d - %4d)^2 + (%4d - %4d)^2 --> correct: %t\n",
+			color.Yellow("Distance with Driver %d : %8d = (%4d - %4d)^2 + (%4d - %4d)^2 --> correct: %t\n",
 				i, computedDist, driverPosX, rider.riderPosX, driverPosY, rider.riderPosY, computedDist == expectedDist)
 		}
 
 		if i == nbDrivers>>1 {
-			fmt.Println("...")
+			color.Yellow("...")
 		}
 	}
 
-	fmt.Printf("\nFinished with %.2f%% errors\n\n", 100*float64(errors)/float64(nbDrivers))
-	fmt.Printf("Closest Driver to Rider is n°%d (%d, %d) with a distance of %d units\n",
-		minIndex, minPosX, minPosY, int(math.Sqrt(float64(minDist))))
+	drivers.ClosestDriverID = "Driver" + strconv.Itoa(minIndex)
 
-	drivers.ClosestDriverID = "driver" + strconv.Itoa(minIndex)
+	color.Yellow("\nFinished with %.2f%% errors\n\n", 100*float64(errors)/float64(nbDrivers))
+	color.Green("Closest Driver to %s is %s (%d, %d) with a distance of %d units\n", rider.RiderID, drivers.ClosestDriverID, minPosX, minPosY, int(math.Sqrt(float64(minDist))))
 
 }
 

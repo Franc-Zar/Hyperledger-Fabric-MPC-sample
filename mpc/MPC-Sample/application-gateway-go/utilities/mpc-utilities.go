@@ -1,8 +1,9 @@
-package main
+package utilities
 
 import (
 	"assetTransfer/model"
 	"fmt"
+	"github.com/fatih/color"
 	"time"
 )
 
@@ -39,9 +40,9 @@ func ObliviousRiding(nbDrivers int, riderID string) (string, string, bool) {
 	// the rider and each of the drivers, and sends back the encrypted result to the rider.
 	//
 	// The rider decrypts the result and chooses the closest driver.
-	fmt.Println("============================================")
-	fmt.Println("Homomorphic computations on batched integers")
-	fmt.Println("============================================")
+	color.Yellow("============================================")
+	color.Yellow("Homomorphic computations on batched integers")
+	color.Yellow("============================================")
 	fmt.Println()
 
 	isClosestDriverFound := false
