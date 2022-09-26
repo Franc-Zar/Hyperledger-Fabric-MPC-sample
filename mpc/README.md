@@ -9,7 +9,7 @@ The MPC-Sample is a simple Hyperledger Fabric application gateway with mpc funct
 ## About
 
 This sample includes smart contract and application code in Go and is thought to be a simple demo. 
-This sample shows creation of an asset representing a result of Homomorphic Encryption based computation. 
+This sample shows creation of an asset representing a result of Oblivious Homomorphic Encryption based computation. 
 Application's main goal is presenting a decentralized solution to the problem described by [ORide](https://oride.epfl.ch/) developers, 
 built upon Hyperledger Fabric Blockchain Infrastructure.
 
