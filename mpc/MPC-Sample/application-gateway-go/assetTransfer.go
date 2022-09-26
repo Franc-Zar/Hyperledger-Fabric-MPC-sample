@@ -13,7 +13,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"path"
+	"strconv"
+
 	"time"
 
 	"github.com/fatih/color"
@@ -41,6 +44,10 @@ var createdServiceID string
 
 func main() {
 	color.Blue("============ application-golang starts ============")
+
+	// per fornire maggiore variabilità ai dati inseriti, ad ogni esecuzione
+	rand.Seed(time.Now().UnixNano())
+	randomRider := "Rider" + strconv.Itoa(rand.Int())
 
 	// The gRPC client connection should be shared by all Gateway connections to this endpoint
 	clientConnection := newGrpcConnection()
@@ -75,7 +82,7 @@ func main() {
 
 	color.Cyan("*************************************************")
 	color.Cyan("createServices:")
-	createServices(contract, "Rider787")
+	createServices(contract, randomRider)
 	fmt.Println()
 
 	color.Cyan("*************************************************")
@@ -196,7 +203,7 @@ func createServices(contract *client.Contract, riderID string) {
 		var fare string
 		createdServiceID, fare = utilities.SetRide(riderID, closestDriverID)
 
-		_, err := contract.SubmitTransaction("CreateService", createdServiceID, closestDriverID, timestampServizio, fare)
+		_, err := contract.SubmitTransaction("CreateService", createdServiceID, closestDriverID, riderID, timestampServizio, fare)
 		if err != nil {
 			panic(fmt.Errorf("failed to submit transaction: %w", err))
 		}
