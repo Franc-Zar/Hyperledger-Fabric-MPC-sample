@@ -31,7 +31,7 @@ The smart contract (in folder `chaincode-go`) implements the following functions
 - DeleteService
 - TransferService
 
-Note that the Service-Asset transfer implemented by the smart contract is a simplified scenario, without ownership validation, meant only to demonstrate how to invoke transactions.
+Note that the asset transfer implemented by the smart contract is a simplified scenario, without ownership validation, meant only to demonstrate how to invoke transactions.
 
 ## Running the sample
 
