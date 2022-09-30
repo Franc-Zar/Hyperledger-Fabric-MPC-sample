@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func ObliviousRiding(nbDrivers int, riderID string) (string, string, bool) {
+func ObliviousRideMatching(nbDrivers int, riderID string) (string, string, bool) {
 	// This example simulates a situation where an anonymous rider
 	// wants to find the closest available rider within a given area.
 	// The application is inspired by the paper https://oride.epfl.ch/

@@ -196,7 +196,7 @@ func createServices(contract *client.Contract, riderID string) {
 	color.Cyan("Submit Transaction: CreateService, creates new asset with ID, Driver, Timestamp, Fare \n")
 
 	// reperimento Driver più vicino
-	closestDriverID, timestampServizio, isClosestDriverFound := utilities.ObliviousRiding(defaultnbDrivers, riderID)
+	closestDriverID, timestampServizio, isClosestDriverFound := utilities.ObliviousRideMatching(defaultnbDrivers, riderID)
 
 	if isClosestDriverFound {
 		// mock di servizio
