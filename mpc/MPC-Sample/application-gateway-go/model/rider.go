@@ -107,6 +107,7 @@ func (rider *Rider) FindClosestDriver(nbDrivers int, riderCiphertext *bfv.Cipher
 	color.Yellow("Computing encrypted distance = ((CtD1 + CtD2 + CtD3 + CtD4...) - CtR)^2 ...")
 	fmt.Println()
 
+	// calcolo (-riderPosX, -riderPosY)
 	rider.evaluator.Neg(riderCiphertext, riderCiphertext)
 	for i := 0; i < nbDrivers; i++ {
 		rider.evaluator.Add(riderCiphertext, drivers.DriverCipherTexts[i], riderCiphertext)

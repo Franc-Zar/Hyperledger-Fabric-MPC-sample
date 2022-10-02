@@ -40,6 +40,9 @@ func ObliviousRideMatching(nbDrivers int, riderID string) (string, string, bool)
 	// the rider and each of the drivers, and sends back the encrypted result to the rider.
 	//
 	// The rider decrypts the result and chooses the closest driver.
+
+	startOblivious := time.Now()
+
 	color.Yellow("============================================")
 	color.Yellow("Homomorphic computations on batched integers")
 	color.Yellow("============================================")
@@ -47,19 +50,40 @@ func ObliviousRideMatching(nbDrivers int, riderID string) (string, string, bool)
 
 	isClosestDriverFound := false
 
+	start := time.Now()
+
 	rider := model.NewRider(riderID)
 
+	duration := time.Since(start)
+	color.Cyan("setup time: %s", duration)
+
+	start = time.Now()
 	// generazione testo cifrato contenente la posizione del Rider
 	riderCiphertext := rider.GetCipheredPosition(nbDrivers)
 
+	duration = time.Since(start)
+	color.Cyan("Random rider generation time: %s", duration)
+
+	start = time.Now()
 	// ricerca dei Driver vicini al Rider
 	drivers := model.GetNearDrivers(rider, nbDrivers)
 
+	duration = time.Since(start)
+	color.Cyan("Random drivers generation time: %s", duration)
+
+	start = time.Now()
 	// ricerca del Driver più vicino al Rider: operazione di calcolo della distanza (calcolo sulle posizioni Homomorphic Encrypted)
 	rider.FindClosestDriver(nbDrivers, &riderCiphertext, &drivers)
+
+	duration = time.Since(start)
+	color.Cyan("finding closest driver time: %s", duration)
+
 	if drivers.ClosestDriverID != "" {
 		isClosestDriverFound = true
 	}
+
+	duration = time.Since(startOblivious)
+	color.Cyan("ObliviousRideMatching execution time: %s", duration)
 
 	return drivers.ClosestDriverID, time.Now().String(), isClosestDriverFound
 
