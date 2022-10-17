@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8eb821ea-1c97-4d32-bbd2-2cb0740cc529" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/application-gateway-go/model/rider.go" beforeDir="false" afterPath="$PROJECT_DIR$/application-gateway-go/model/rider.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chaincode-go/chaincode/smartcontract.go" beforeDir="false" afterPath="$PROJECT_DIR$/chaincode-go/chaincode/smartcontract.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +47,8 @@
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/francesco/tesi/Hyperledger-Fabric-MPC-sample/mpc/MPC-Sample&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
   <component name="RecentsManager">
