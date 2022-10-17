@@ -2,7 +2,7 @@
 
 The MPC-Sample is a simple Hyperledger Fabric application gateway with mpc functionalities:
 
-- built starting from [fabric-samples](https://github.com/hyperledger/fabric-samples) and implementing mpc functionalities through [lattigo](https://github.com/tuneinsight/lattigo)
+- built starting from [fabric-samples](https://github.com/hyperledger/fabric-samples) and implementing mpc functionalities through a sample provided by [lattigo](https://github.com/tuneinsight/lattigo)
 - inspired by [ORide](https://oride.epfl.ch/)
 
 
