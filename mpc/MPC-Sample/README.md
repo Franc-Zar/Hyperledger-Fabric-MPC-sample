@@ -53,3 +53,7 @@ When you are finished, you can bring down the test network (from the `test-netwo
 ```
 ./run_mpc_app.sh --down  
 ```
+
+## Licenses
+
+All work is done with respect to original authors and owners provided [Licenses](https://github.com/Franc-Zar/Hyperledger-Fabric-MPC-sample/tree/main/licenses)
